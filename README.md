@@ -11,10 +11,45 @@ it may receive breaking changes in the future._
 
 ## Adding this module to your project dependencies
 
-Add [Testcontainers](https://www.testcontainers.org/quickstart/junit_5_quickstart/) dependency and then add the 
-following dependency to your `pom.xml` / `build.gradle` file:
+1. Add Foundation DB java client dependency, for example:
 
-**Maven**
+```groovy
+implementation("org.foundationdb:fdb-java:7.1.11")
+```
+
+```xml
+<dependency>
+    <groupId>org.foundationdb</groupId>
+    <artifactId>fdb-java</artifactId>
+    <version>7.1.11</version>
+</dependency>
+```
+
+Note that the FDB client requires the native client libraries to be installed:
+- https://apple.github.io/foundationdb/downloads.html
+- https://github.com/apple/foundationdb/releases
+
+2. Add [Testcontainers](https://www.testcontainers.org/quickstart/junit_5_quickstart/) dependency, for example: 
+
+```groovy
+testImplementation "org.testcontainers:testcontainers:1.17.3"
+```
+
+```xml
+<dependency>
+    <groupId>org.testcontainers</groupId>
+    <artifactId>testcontainers</artifactId>
+    <version>1.17.3</version>
+    <scope>test</scope>
+</dependency>
+```
+
+3. Finally add the module dependency to your `build.gradle` / `pom.xml` file:
+
+```groovy
+testImplementation "io.github.aleris:testcontainers-foundationdb:0.0.3"
+```
+
 ```xml
 <dependency>
     <groupId>io.github.aleris</groupId>
@@ -24,10 +59,6 @@ following dependency to your `pom.xml` / `build.gradle` file:
 </dependency>
 ```
 
-**Gradle**
-```groovy
-testImplementation "io.github.aleris:testcontainers-foundationdb:0.0.3"
-```
 
 ## Usage example
 
@@ -40,6 +71,8 @@ try (final FoundationDBContainer foundationDBContainer = new FoundationDBContain
     final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
     Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
 
+    FDB fdb = FDB.selectAPIVersion(710);
+    
     try (Database db = fdb.open(clusterFilePath.toString())) {
         db.run(tr -> {
             tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
