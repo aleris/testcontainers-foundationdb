@@ -1,15 +1,25 @@
 plugins {
     id 'java'
+    id 'com.diffplug.spotless' version '6.3.0'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'io.github.aleris'
+version '0.0.1'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    implementation("org.testcontainers:testcontainers:1.17.3") {
+        exclude group: "org.junit"
+    }
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation("org.foundationdb:fdb-java:7.1.11")
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
