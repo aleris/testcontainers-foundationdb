@@ -19,14 +19,14 @@ following dependency to your `pom.xml` / `build.gradle` file:
 <dependency>
     <groupId>io.github.aleris</groupId>
     <artifactId>testcontainers-foundationdb</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <scope>test</scope>
 </dependency>
 ```
 
 **Gradle**
 ```groovy
-testImplementation "io.github.aleris:testcontainers-foundationdb:0.0.2"
+testImplementation "io.github.aleris:testcontainers-foundationdb:0.0.3"
 ```
 
 ## Usage example
