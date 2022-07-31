@@ -100,6 +100,8 @@ public class FoundationDBContainerTest {
             final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
             Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
 
+            final FDB fdb = FDB.selectAPIVersion(710);
+
             try (Database db = fdb.open(clusterFilePath.toString())) {
                 db.run(tr -> {
                     tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
