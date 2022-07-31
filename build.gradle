@@ -1,10 +1,14 @@
 plugins {
     id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
     id 'com.diffplug.spotless' version '6.3.0'
+    id 'io.github.gradle-nexus.publish-plugin' version "1.1.0"
 }
 
 group 'io.github.aleris'
-version '0.0.1'
+version '0.0.2'
 
 repositories {
     mavenCentral()
@@ -24,6 +28,55 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from(components.java)
+
+            pom {
+                name.set("testcontainers-foundationdb")
+                description.set("Testcontainers FoundationDB module.")
+                url.set("https://github.com/aleris/testcontainers-foundationdb")
+                licenses {
+                    license {
+                        name.set("MIT")
+                        url.set("https://github.com/aleris/testcontainers-foundationdb/blob/main/LICENSE.md")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("aleris")
+                        name.set("Adrian Tosca")
+                    }
+                }
+                scm {
+                    connection.set("https://github.com/aleris/testcontainers-foundationdb.git")
+                    url.set("https://github.com/aleris/testcontainers-foundationdb")
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["mavenJava"])
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
 }

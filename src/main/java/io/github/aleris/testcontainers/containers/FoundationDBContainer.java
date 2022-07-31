@@ -47,10 +47,17 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
     private final String networkAlias;
 
+    /**
+     * Creates a {@link FoundationDBContainer} with the default version 7.1.11
+     */
     public FoundationDBContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
     }
 
+    /**
+     * Creates a {@link FoundationDBContainer} with a specific docker image version.
+     * @param dockerImageName the docker image with the desired version.
+     */
     @SneakyThrows
     public FoundationDBContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -69,6 +76,9 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         this.waitStrategy = Wait.forLogMessage(".*FDBD joined cluster.*\\n", 1);
     }
 
+    /**
+     * @return the cluster string that can be used for making a connection
+     */
     public String getConnectionString() {
         return String.format("docker:docker@%s:%d", getHost(), bindPort);
     }
