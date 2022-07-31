@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    permissions:
+      security-events: write
+      actions: write
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8.0.302'
+          distribution: temurin
+
+      - name: Install Foundation DB client library
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install wget -y
+          sudo wget -P /tmp https://github.com/apple/foundationdb/releases/download/7.1.11/foundationdb-clients_7.1.11-1_amd64.deb
+          sudo dpkg -i /tmp/foundationdb-clients_7.1.11-1_amd64.deb
+          export DYLD_LIBRARY_PATH=/usr/lib/
+
+      - name: Cache Gradle home files
+        uses: actions/cache@v3.0.3
+        continue-on-error: true
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-home-${{matrix.gradle_args}}_check-${{ hashFiles('**/*.gradle') }}
+
+      - name: Clear existing docker image cache
+        run: docker image prune -af
+
+      - name: Build
+        run: gradle clean build
+
+      - name: Test
+        run: gradle test

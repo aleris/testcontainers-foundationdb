@@ -1,5 +1,7 @@
 # Testcontainers FoundationDB Module
 
+[![ci](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/ci.yml/badge.svg)](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/ci.yml)
+
 Helps running [FoundationDB](https://www.foundationdb.org/) using [Testcontainers](https://www.testcontainers.org/).
 
 It's based on the [docker images](https://hub.docker.com/r/foundationdb/foundationdb) provided by FoundationDB
@@ -71,7 +73,7 @@ try (final FoundationDBContainer foundationDBContainer = new FoundationDBContain
     final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
     Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
 
-    FDB fdb = FDB.selectAPIVersion(710);
+    final FDB fdb = FDB.selectAPIVersion(710);
     
     try (Database db = fdb.open(clusterFilePath.toString())) {
         db.run(tr -> {
