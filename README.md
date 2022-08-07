@@ -70,12 +70,9 @@ You can start a FoundationDB container instance from a Java application by using
 try (final FoundationDBContainer foundationDBContainer = new FoundationDBContainer()) {
     foundationDBContainer.start();
 
-    final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
-    Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
-
     final FDB fdb = FDB.selectAPIVersion(710);
-    
-    try (Database db = fdb.open(clusterFilePath.toString())) {
+
+    try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
         db.run(tr -> {
             tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
             return null;
