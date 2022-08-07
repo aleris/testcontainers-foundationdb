@@ -15,6 +15,8 @@ import org.testcontainers.utility.Base58;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Constructs a single in memory <a href="https://www.foundationdb.org/">FoundationDB</a> database for testing
@@ -46,6 +48,8 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     private int bindPort;
 
     private final String networkAlias;
+
+    private Path clusterFilePath;
 
     /**
      * Creates a {@link FoundationDBContainer} with the default version 7.1.11
@@ -81,6 +85,23 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
      */
     public String getConnectionString() {
         return String.format("docker:docker@%s:%d", getHost(), bindPort);
+    }
+
+    /**
+     * Returns a temporary file path, containing the cluster connection string, and that can be used by the
+     * Foundation DB client to connect to the cluster server. The file is only created if requests. The file is
+     * deleted when the container is stopped.
+     * @return a Foundation DB cluster file path
+     */
+    @SneakyThrows
+    public String getClusterFilePath() {
+        if (clusterFilePath != null) {
+            return clusterFilePath.toString();
+        }
+        clusterFilePath = Files.createTempFile("fdb_", ".cluster");
+        Files.write(clusterFilePath, getConnectionString().getBytes(StandardCharsets.UTF_8));
+        log.debug("Using cluster file {}", clusterFilePath);
+        return clusterFilePath.toString();
     }
 
     @SneakyThrows
@@ -149,6 +170,15 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         } else {
             initDatabaseSingleInMemory();
         }
+    }
+
+    @SneakyThrows
+    @Override
+    protected void containerIsStopping(InspectContainerResponse containerInfo) {
+        if (clusterFilePath != null) {
+            Files.deleteIfExists(clusterFilePath);
+        }
+        super.containerIsStopping(containerInfo);
     }
 
     @SneakyThrows

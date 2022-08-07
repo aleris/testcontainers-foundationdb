@@ -49,14 +49,14 @@ testImplementation "org.testcontainers:testcontainers:1.17.3"
 3. Finally add the module dependency to your `build.gradle` / `pom.xml` file:
 
 ```groovy
-testImplementation "io.github.aleris:testcontainers-foundationdb:0.0.3"
+testImplementation "io.github.aleris:testcontainers-foundationdb:0.1.0"
 ```
 
 ```xml
 <dependency>
     <groupId>io.github.aleris</groupId>
     <artifactId>testcontainers-foundationdb</artifactId>
-    <version>0.0.3</version>
+    <version>0.1.0</version>
     <scope>test</scope>
 </dependency>
 ```

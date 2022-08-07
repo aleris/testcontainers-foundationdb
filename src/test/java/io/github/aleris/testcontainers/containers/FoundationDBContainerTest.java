@@ -8,17 +8,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 public class FoundationDBContainerTest {
 
     private final FDB fdb = FDB.selectAPIVersion(710);
+
+    @Test void createsClusterFile() {
+        final Path clusterFilePath;
+        try (final FoundationDBContainer foundationDBContainer = new FoundationDBContainer()) {
+            foundationDBContainer.start();
+
+            clusterFilePath = Paths.get(foundationDBContainer.getClusterFilePath());
+            assertTrue(Files.exists(clusterFilePath), "Cluster file created container start");
+        }
+        assertFalse(Files.exists(clusterFilePath), "Cluster file deleted after container stop");
+    }
 
     @SneakyThrows
     @Test
@@ -28,9 +38,7 @@ public class FoundationDBContainerTest {
 
             log.debug("Using connection string {}", foundationDBContainer.getConnectionString());
 
-            final Path clusterFilePath = createClusterTempFile(foundationDBContainer);
-
-            try (Database db = fdb.open(clusterFilePath.toString())) {
+            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 // Run an operation on the database
                 db.run(tr -> {
                     tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
@@ -44,7 +52,6 @@ public class FoundationDBContainerTest {
                 });
                 assertEquals("world", resultValue);
             }
-            Files.delete(clusterFilePath);
         }
     }
 
@@ -56,15 +63,14 @@ public class FoundationDBContainerTest {
 
             log.debug("Using connection string {}", foundationDBContainer.getConnectionString());
 
-            final Path clusterFilePath = createClusterTempFile(foundationDBContainer);
-
-            try (Database db = fdb.open(clusterFilePath.toString())) {
+            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 db.run(tr -> {
                     tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
                     return null;
                 });
             }
-            Files.delete(clusterFilePath);
+        } catch (Exception ex) {
+            fail(ex);
         }
     }
 
@@ -80,14 +86,11 @@ public class FoundationDBContainerTest {
 
             log.debug("Using connection string {}", foundationDBContainer.getConnectionString());
 
-            final Path clusterFilePath = createClusterTempFile(foundationDBContainer);
-
-            try (Database db = fdb.open(clusterFilePath.toString())) {
+            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 assertNotNull(db);
                 // does not actually work to run a transaction with an older version of the API, as only one version can
                 // be selected with FDB.selectAPIVersion for the lifetime of the JVM
             }
-            Files.delete(clusterFilePath);
         }
     }
 
@@ -97,25 +100,14 @@ public class FoundationDBContainerTest {
         try (final FoundationDBContainer foundationDBContainer = new FoundationDBContainer()) {
             foundationDBContainer.start();
 
-            final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
-            Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
-
             final FDB fdb = FDB.selectAPIVersion(710);
 
-            try (Database db = fdb.open(clusterFilePath.toString())) {
+            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 db.run(tr -> {
                     tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
                     return null;
                 });
             }
         }
-    }
-
-    @SneakyThrows
-    private Path createClusterTempFile(final FoundationDBContainer foundationDBContainer) {
-        final Path clusterFilePath = Files.createTempFile("fdb", ".cluster");
-        Files.write(clusterFilePath, foundationDBContainer.getConnectionString().getBytes(StandardCharsets.UTF_8));
-        log.debug("Using cluster file {}", clusterFilePath);
-        return clusterFilePath;
     }
 }
