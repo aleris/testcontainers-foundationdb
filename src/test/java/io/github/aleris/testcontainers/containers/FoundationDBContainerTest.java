@@ -79,7 +79,7 @@ public class FoundationDBContainerTest {
     public void shouldRunWithSpecificVersion() {
         try (
                 final FoundationDBContainer foundationDBContainer = new FoundationDBContainer(
-                        DockerImageName.parse("foundationdb/foundationdb:6.3.23")
+                        DockerImageName.parse("foundationdb/foundationdb:7.1.23")
                 )
         ) {
             foundationDBContainer.start();
@@ -102,7 +102,7 @@ public class FoundationDBContainerTest {
 
             final FDB fdb = FDB.selectAPIVersion(710);
 
-            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
+            try (final Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 db.run(tr -> {
                     tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
                     return null;

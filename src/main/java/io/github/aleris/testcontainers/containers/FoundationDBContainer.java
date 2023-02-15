@@ -22,11 +22,11 @@ import java.nio.file.Path;
  * Constructs a single in memory <a href="https://www.foundationdb.org/">FoundationDB</a> database for testing
  * transactions.
  *
- * <p>Tested on a FoundationDB version 7.1.11 (the default version if not specified).</p>
+ * <p>Tested on a FoundationDB version 7.1.23 (the default version if not specified).</p>
  *
  * <p>Other docker images can be used from
  * <a href="https://hub.docker.com/r/foundationdb/foundationdb">foundationdb docker hub</a>. The FoundationDB
- * API version must be aligned with the docker version used (eg. for 7.1.11 use api version 711).</p>
+ * API version must be aligned with the docker version used (eg. for 7.1.23 use api version 710).</p>
  *
  * <p>FDB requires the native client libraries be installed separately from the java bindings. Install the libraries
  * before using the java FDB client. Also, it might have issues working on newer macOS with the java bindings, try using
@@ -38,7 +38,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("foundationdb/foundationdb");
 
-    private static final String DEFAULT_TAG = "7.1.11";
+    private static final String DEFAULT_TAG = "7.1.23";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
@@ -52,7 +52,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     private Path clusterFilePath;
 
     /**
-     * Creates a {@link FoundationDBContainer} with the default version 7.1.11
+     * Creates a {@link FoundationDBContainer} with the default version 7.1.23
      */
     public FoundationDBContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
@@ -143,7 +143,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         final ToStringConsumer stdOutConsumer = new ToStringConsumer();
         final ToStringConsumer stdErrConsumer = new ToStringConsumer();
 
-        try (FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
+        try (final FrameConsumerResultCallback callback = new FrameConsumerResultCallback()) {
             callback.addConsumer(OutputFrame.OutputType.STDOUT, stdOutConsumer);
             callback.addConsumer(OutputFrame.OutputType.STDERR, stdErrConsumer);
             dockerClient.execStartCmd(createCmdResponse.getId()).exec(callback);

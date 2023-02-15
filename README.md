@@ -7,23 +7,19 @@ Helps running [FoundationDB](https://www.foundationdb.org/) using [Testcontainer
 It's based on the [docker images](https://hub.docker.com/r/foundationdb/foundationdb) provided by FoundationDB
 Community.
 
-_Note: This module is INCUBATING. While it is ready for use and operational in the current version, it is possible that
-it may receive breaking changes in the future._
-
-
 ## Adding this module to your project dependencies
 
 1. Add Foundation DB java client dependency, for example:
 
 ```groovy
-implementation("org.foundationdb:fdb-java:7.1.11")
+implementation("org.foundationdb:fdb-java:7.1.23")
 ```
 
 ```xml
 <dependency>
     <groupId>org.foundationdb</groupId>
     <artifactId>fdb-java</artifactId>
-    <version>7.1.11</version>
+    <version>7.1.23</version>
 </dependency>
 ```
 
@@ -34,14 +30,14 @@ Note that the FDB client requires the native client libraries to be installed:
 2. Add [Testcontainers](https://www.testcontainers.org/quickstart/junit_5_quickstart/) dependency, for example: 
 
 ```groovy
-testImplementation "org.testcontainers:testcontainers:1.17.3"
+testImplementation "org.testcontainers:testcontainers:1.17.6"
 ```
 
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
-    <version>1.17.3</version>
+    <version>1.17.6</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -49,14 +45,14 @@ testImplementation "org.testcontainers:testcontainers:1.17.3"
 3. Finally add the module dependency to your `build.gradle` / `pom.xml` file:
 
 ```groovy
-testImplementation "io.github.aleris:testcontainers-foundationdb:0.1.0"
+testImplementation "io.github.aleris:testcontainers-foundationdb:1.0.0"
 ```
 
 ```xml
 <dependency>
     <groupId>io.github.aleris</groupId>
     <artifactId>testcontainers-foundationdb</artifactId>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -72,7 +68,7 @@ try (final FoundationDBContainer foundationDBContainer = new FoundationDBContain
 
     final FDB fdb = FDB.selectAPIVersion(710);
 
-    try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
+    try (final Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
         db.run(tr -> {
             tr.set(Tuple.from("hello").pack(), Tuple.from("world").pack());
             return null;
@@ -85,7 +81,7 @@ To start with a specific version use:
 
 ```java
 final FoundationDBContainer foundationDBContainer = new FoundationDBContainer(
-        DockerImageName.parse("foundationdb/foundationdb:6.3.23")
+        DockerImageName.parse("foundationdb/foundationdb:7.1.23")
 )
 ```
 

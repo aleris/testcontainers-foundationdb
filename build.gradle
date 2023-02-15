@@ -8,20 +8,20 @@ plugins {
 }
 
 group 'io.github.aleris'
-version '0.1.0'
+version '1.0.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.testcontainers:testcontainers:1.17.3") {
+    implementation("org.testcontainers:testcontainers:1.17.6") {
         exclude group: "org.junit"
     }
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
-    testImplementation("org.foundationdb:fdb-java:7.1.11")
+    testImplementation("org.foundationdb:fdb-java:7.1.23")
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

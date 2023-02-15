@@ -26,8 +26,8 @@ jobs:
           sudo apt update
           sudo apt upgrade -y
           sudo apt install wget -y
-          sudo wget -P /tmp https://github.com/apple/foundationdb/releases/download/7.1.11/foundationdb-clients_7.1.11-1_amd64.deb
-          sudo dpkg -i /tmp/foundationdb-clients_7.1.11-1_amd64.deb
+          sudo wget -P /tmp https://github.com/apple/foundationdb/releases/download/7.1.23/foundationdb-clients_7.1.23-1_amd64.deb
+          sudo dpkg -i /tmp/foundationdb-clients_7.1.23-1_amd64.deb
           export DYLD_LIBRARY_PATH=/usr/lib/
 
       - name: Cache Gradle home files
