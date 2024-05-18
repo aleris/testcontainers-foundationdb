@@ -1,4 +1,4 @@
-package io.github.aleris.testcontainers.containers;
+package earth.adi.testcontainers.containers;
 
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -22,11 +22,11 @@ import java.nio.file.Path;
  * Constructs a single in memory <a href="https://www.foundationdb.org/">FoundationDB</a> database for testing
  * transactions.
  *
- * <p>Tested on a FoundationDB version 7.1.23 (the default version if not specified).</p>
+ * <p>Tested on a FoundationDB version 7.1.61 (the default version if not specified).</p>
  *
  * <p>Other docker images can be used from
  * <a href="https://hub.docker.com/r/foundationdb/foundationdb">foundationdb docker hub</a>. The FoundationDB
- * API version must be aligned with the docker version used (eg. for 7.1.23 use api version 710).</p>
+ * API version must be aligned with the docker version used (eg. for 7.1.61 use api version 710).</p>
  *
  * <p>FDB requires the native client libraries be installed separately from the java bindings. Install the libraries
  * before using the java FDB client. Also, it might have issues working on newer macOS with the java bindings, try using
@@ -38,7 +38,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("foundationdb/foundationdb");
 
-    private static final String DEFAULT_TAG = "7.1.23";
+    private static final String DEFAULT_TAG = "7.1.61";
 
     private static final int CONTAINER_EXIT_CODE_OK = 0;
 
@@ -52,7 +52,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     private Path clusterFilePath;
 
     /**
-     * Creates a {@link FoundationDBContainer} with the default version 7.1.23
+     * Creates a {@link FoundationDBContainer} with the default version 7.1.61
      */
     public FoundationDBContainer() {
         this(DEFAULT_IMAGE_NAME.withTag(DEFAULT_TAG));
@@ -205,7 +205,7 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     @SneakyThrows
     private String runCliExecOutput(final String command) {
         final ExecResult execResult = execInContainer("/usr/bin/fdbcli", "--exec", command);
-        log.debug(execResult.getStdout());
+        log.debug("fdbcli output: {}", execResult.getStdout().trim());
         if (execResult.getExitCode() != CONTAINER_EXIT_CODE_OK) {
             final String errorMessage = String.format(
                 "Exit code %s when attempting to run fdbcli command %s: %s",

@@ -4,28 +4,29 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'com.diffplug.spotless' version '6.3.0'
-    id 'io.github.gradle-nexus.publish-plugin' version "1.1.0"
+    id 'org.jreleaser' version "1.12.0"
 }
 
-group 'io.github.aleris'
-version '1.0.0'
+group 'earth.adi'
+version '1.1.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.testcontainers:testcontainers:1.17.6") {
+    implementation("org.testcontainers:testcontainers:1.19.8") {
         exclude group: "org.junit"
     }
     compileOnly("org.projectlombok:lombok:1.18.24")
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
 
-    testImplementation("org.foundationdb:fdb-java:7.1.23")
-    testCompileOnly 'org.projectlombok:lombok:1.18.24'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+    testImplementation("org.foundationdb:fdb-java:7.1.61")
+    testCompileOnly 'org.projectlombok:lombok:1.18.32'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.slf4j:slf4j-simple:2.0.12'
 }
 
 java {
@@ -34,8 +35,16 @@ java {
 }
 
 test {
+    environment "DYLD_LIBRARY_PATH", "/usr/local/lib"
     useJUnitPlatform()
 }
+
+task updateReadmeVersion(type:Exec) {
+    commandLine("sh", "./scripts/updateReadmeVersion.sh")
+}
+
+def mavenArtifactDescription = "Testcontainers FoundationDB module."
+def stagingDir = layout.buildDirectory.dir("staging-deploy")
 
 publishing {
     publications {
@@ -44,7 +53,7 @@ publishing {
 
             pom {
                 name.set("testcontainers-foundationdb")
-                description.set("Testcontainers FoundationDB module.")
+                description.set(mavenArtifactDescription)
                 url.set("https://github.com/aleris/testcontainers-foundationdb")
                 licenses {
                     license {
@@ -56,6 +65,7 @@ publishing {
                     developer {
                         id.set("aleris")
                         name.set("Adrian Tosca")
+                        email.set("adrian.tosca@gmail.com")
                     }
                 }
                 scm {
@@ -65,18 +75,35 @@ publishing {
             }
         }
     }
+    repositories { maven { url = stagingDir.get().asFile.toURI() } }
 }
 
-signing {
-    useGpgCmd()
-    sign(publishing.publications["mavenJava"])
-}
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+jreleaser {
+    project {
+        description.set(mavenArtifactDescription)
+        authors.set(["aleris"])
+        license.set("MIT")
+        inceptionYear = "2023"
+    }
+    release {
+        github {
+            repoOwner.set("aleris")
+            overwrite = true
+        }
+    }
+    signing {
+        active.set(org.jreleaser.model.Active.ALWAYS)
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                register("sonatype") {
+                    active.set(org.jreleaser.model.Active.ALWAYS)
+                    url.set("https://central.sonatype.com/api/v1/publisher")
+                    stagingRepository(stagingDir.get().toString())
+                }
+            }
         }
     }
 }

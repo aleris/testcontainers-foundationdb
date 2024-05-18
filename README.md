@@ -1,25 +1,26 @@
 # Testcontainers FoundationDB Module
 
-[![ci](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/ci.yml/badge.svg)](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/ci.yml)
+[![Build](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/build-on-push.yml/badge.svg)](https://github.com/aleris/testcontainers-foundationdb/actions/workflows/build-on-push.yml)
 
 Helps running [FoundationDB](https://www.foundationdb.org/) using [Testcontainers](https://www.testcontainers.org/).
 
 It's based on the [docker images](https://hub.docker.com/r/foundationdb/foundationdb) provided by FoundationDB
 Community.
 
+
 ## Adding this module to your project dependencies
 
 1. Add Foundation DB java client dependency, for example:
 
 ```groovy
-implementation("org.foundationdb:fdb-java:7.1.23")
+implementation("org.foundationdb:fdb-java:7.1.61")
 ```
 
 ```xml
 <dependency>
     <groupId>org.foundationdb</groupId>
     <artifactId>fdb-java</artifactId>
-    <version>7.1.23</version>
+    <version>7.1.61</version>
 </dependency>
 ```
 
@@ -30,14 +31,14 @@ Note that the FDB client requires the native client libraries to be installed:
 2. Add [Testcontainers](https://www.testcontainers.org/quickstart/junit_5_quickstart/) dependency, for example: 
 
 ```groovy
-testImplementation "org.testcontainers:testcontainers:1.17.6"
+testImplementation "org.testcontainers:testcontainers:1.19.8"
 ```
 
 ```xml
 <dependency>
     <groupId>org.testcontainers</groupId>
     <artifactId>testcontainers</artifactId>
-    <version>1.17.6</version>
+    <version>1.19.8</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -45,14 +46,14 @@ testImplementation "org.testcontainers:testcontainers:1.17.6"
 3. Finally add the module dependency to your `build.gradle` / `pom.xml` file:
 
 ```groovy
-testImplementation "io.github.aleris:testcontainers-foundationdb:1.0.0"
+testImplementation "earth.adi:testcontainers-foundationdb:1.1.0"
 ```
 
 ```xml
 <dependency>
-    <groupId>io.github.aleris</groupId>
+    <groupId>earth.adi</groupId>
     <artifactId>testcontainers-foundationdb</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -81,26 +82,32 @@ To start with a specific version use:
 
 ```java
 final FoundationDBContainer foundationDBContainer = new FoundationDBContainer(
-        DockerImageName.parse("foundationdb/foundationdb:7.1.23")
+        DockerImageName.parse("foundationdb/foundationdb:7.1.61")
 )
 ```
 
 See also the tests for other examples.
 
+
 ## Caveats
 
 - FDB requires the native client libraries be installed separately for the java dependency to work. Install the
   libraries before using the java FDB client.
-- Also, it might have issues working on newer macOS with the java bindings, try using java 8 and
-  `export DYLD_LIBRARY_PATH=/usr/local/lib` in environment variables after installing FDB clients locally.
+- On MacOS, try setting `export DYLD_LIBRARY_PATH=/usr/local/lib` in environment variables 
+  after installing FDB clients locally if you encounter issues.
 
-## Dev
 
-To publish a new version, increment the version in [build.gradle](./build.gradle), set the following:
+## Releasing
+ <details>
+    <summary>Details</summary>
 
-```sh
-export ORG_GRADLE_PROJECT_sonatypeUsername=sonatypeUsername
-export ORG_GRADLE_PROJECT_sonatypePassword='sonatypePassword'
+```console
+~$ cd testcontainers-foundationdb
+# Update version in build.gradle.kts
+~/testcontainers-foundationdb ./gradlew updateReadmeVersion # updates the version in README.md from build.gradle.kts
+~/testcontainers-foundationdb ./gradlew jreleaserConfig # just to double check the configuration
+~/testcontainers-foundationdb ./gradlew clean
+~/testcontainers-foundationdb ./gradlew publish
+~/testcontainers-foundationdb ./gradlew jreleaserFullRelease
 ```
-
-And then run `sh ./scripts/publish.sh`.
+</details>

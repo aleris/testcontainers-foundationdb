@@ -1,4 +1,4 @@
-package io.github.aleris.testcontainers.containers;
+package earth.adi.testcontainers.containers;
 
 import com.apple.foundationdb.Database;
 import com.apple.foundationdb.FDB;
@@ -8,9 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.DockerImageName;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +42,18 @@ public class FoundationDBContainerTest {
 
             log.debug("Using connection string {}", foundationDBContainer.getConnectionString());
 
+            try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
+                db.run(tr -> {
+                    byte[] resultBytes = new byte[0];
+                    try {
+                        resultBytes = tr.get("bla".getBytes(StandardCharsets.UTF_8)).get(5, TimeUnit.SECONDS);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                        throw new RuntimeException(e);
+                    }
+                    assertNull(resultBytes);
+                    return null;
+                });
+            }
             try (Database db = fdb.open(foundationDBContainer.getClusterFilePath())) {
                 // Run an operation on the database
                 db.run(tr -> {
@@ -79,7 +95,7 @@ public class FoundationDBContainerTest {
     public void shouldRunWithSpecificVersion() {
         try (
                 final FoundationDBContainer foundationDBContainer = new FoundationDBContainer(
-                        DockerImageName.parse("foundationdb/foundationdb:7.1.23")
+                        DockerImageName.parse("foundationdb/foundationdb:7.1.61")
                 )
         ) {
             foundationDBContainer.start();
