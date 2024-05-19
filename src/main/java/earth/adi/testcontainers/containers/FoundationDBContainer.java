@@ -19,24 +19,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Constructs a single in memory <a href="https://www.foundationdb.org/">FoundationDB</a> database for testing
- * transactions.
+ * Constructs a single in memory <a href="https://www.foundationdb.org/">FoundationDB</a> database
+ * for testing transactions.
  *
- * <p>Tested on a FoundationDB version 7.1.61 (the default version if not specified).</p>
+ * <p>Uses foundationdb:7.1.61 by default</p>
  *
  * <p>Other docker images can be used from
- * <a href="https://hub.docker.com/r/foundationdb/foundationdb">foundationdb docker hub</a>. The FoundationDB
- * API version must be aligned with the docker version used (eg. for 7.1.61 use api version 710).</p>
+ * <a href="https://hub.docker.com/r/foundationdb/foundationdb">foundationdb docker hub</a>.
+ * The FoundationDB API version must be aligned with the docker version used
+ * (e.g., for 7.1.61 use api version 710).</p>
  *
- * <p>FDB requires the native client libraries be installed separately from the java bindings. Install the libraries
- * before using the java FDB client. Also, it might have issues working on newer macOS with the java bindings, try using
- * java 8 and `export DYLD_LIBRARY_PATH=/usr/local/lib` in environment variables after installing FDB clients locally.
+ * <p>FDB requires the native client libraries be installed separately from the java bindings.
+ * Install the libraries before using the java FDB client. Also, it might have issues working
+ * on macOS with the java bindings, try using `export DYLD_LIBRARY_PATH=/usr/local/lib` in
+ * environment variables after installing FDB clients locally.
  * </p>
  */
 @Slf4j
 public class FoundationDBContainer extends GenericContainer<FoundationDBContainer> {
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("foundationdb/foundationdb");
+    private static final DockerImageName DEFAULT_IMAGE_NAME =
+        DockerImageName.parse("foundationdb/foundationdb");
 
     private static final String DEFAULT_TAG = "7.1.61";
 
@@ -107,20 +110,26 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     @SneakyThrows
     @Override
     public void doStart() {
-        // FDB server port and the port seen by FDB clients must match, otherwise the FDB server will crash with
-        // errors like "Assertion pkt.canonicalRemotePort == peerAddress.port failed..."
+        // FDB server port and the port seen by FDB clients must match,
+        // otherwise the FDB server will crash with errors like
+        // "Assertion pkt.canonicalRemotePort == peerAddress.port failed..."
         proxy =
             new SocatContainer()
                 .withNetwork(getNetwork())
-                // the real port we want to proxy to FDB, will get the binding port after socat proxy container is starting
+                // the real port we want to proxy to FDB,
+                // will get the binding port after socat proxy container is starting
                 .withExposedPorts(INTERNAL_PORT)
-                // unused port, needed for the container to start before mapping the real port to the bind port of FDB
-                // cannot use this directly as the mapped port will be known after proxy container starts
+                // unused port, needed for the container to start before mapping the real port
+                // to the bind port of FDB
+                // cannot use this directly as the mapped port will be known after
+                // the proxy container starts
                 .withTarget(INTERNAL_PORT + 1, networkAlias)
                 .withReuse(this.isShouldBeReused());
-        proxy.setWaitStrategy(null); // set so it does not wait for the check on the INTERNAL_PORT also
+        // set so it does not wait for the check on the INTERNAL_PORT also
+        proxy.setWaitStrategy(null);
         proxy.start();
-        // now socat proxy has started, will use the mapped port as the FDB port, so it will match with the
+        // now socat proxy has started, will use the mapped port as the FDB port,
+        // so it will match with the
         // socat exposed port which is "seen" by FDB clients
         bindPort = proxy.getMappedPort(INTERNAL_PORT);
         // FDB server bind port can be set on env before starting the FDB container
@@ -137,7 +146,11 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
     private void proxyBindPort(final int listenPort, final int mappedPort) {
         final ExecCreateCmdResponse createCmdResponse = dockerClient
             .execCreateCmd(proxy.getContainerId())
-            .withCmd("socat", "TCP-LISTEN:" + listenPort + ",fork,reuseaddr", "TCP:" + networkAlias + ":" + mappedPort)
+            .withCmd(
+                "socat",
+                "TCP-LISTEN:" + listenPort + ",fork,reuseaddr",
+                "TCP:" + networkAlias + ":" + mappedPort
+            )
             .exec();
 
         final ToStringConsumer stdOutConsumer = new ToStringConsumer();
@@ -154,7 +167,8 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         }
         final String stdErr = stdErrConsumer.toString(StandardCharsets.UTF_8);
         if (!stdErr.isEmpty()) {
-            final String errorMessage = String.format("Error when attempting to bind port with socat: %s", stdErr);
+            final String errorMessage = String
+                .format("Error when attempting to bind port with socat: %s", stdErr);
             log.error("{}", errorMessage);
             throw new ProxyInitializationException(errorMessage);
         }
@@ -162,7 +176,8 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
 
     @Override
     protected void containerIsStarted(final InspectContainerResponse containerInfo) {
-        // is faster when not checking if the database is initialized, and this is only necessary if reusing container
+        // is faster when not checking if the database is initialized,
+        // and this is only necessary if reusing container
         if (isShouldBeReused()) {
             if (!isDatabaseInitialized()) {
                 initDatabaseSingleInMemory();
@@ -193,7 +208,8 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         final String output = runCliExecOutput("configure new single memory");
         if (!output.contains("Database created")) {
             final String errorMessage = String.format(
-                "Database not created when attempting to initialize a new single memory database. Output was: %s",
+                "Database not created when attempting to initialize " +
+                    "a new single memory database. Output was: %s",
                 output
             );
             log.error(errorMessage);
@@ -219,15 +235,19 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         return execResult.getStdout();
     }
 
+    /**
+     * Exception thrown when there is an issue initializing the database.
+     */
     public static class DatabaseInitializationException extends RuntimeException {
-
         DatabaseInitializationException(final String errorMessage) {
             super(errorMessage);
         }
     }
 
+    /**
+     * Exception thrown when there is an issue initializing the proxy to the database.
+     */
     public static class ProxyInitializationException extends RuntimeException {
-
         ProxyInitializationException(final String errorMessage) {
             super(errorMessage);
         }
