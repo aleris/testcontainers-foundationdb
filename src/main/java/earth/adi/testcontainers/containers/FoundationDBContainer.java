@@ -142,6 +142,14 @@ public class FoundationDBContainer extends GenericContainer<FoundationDBContaine
         proxyBindPort(INTERNAL_PORT, bindPort);
     }
 
+    @Override
+    public void stop() {
+        if (this.proxy != null) {
+            this.proxy.stop();
+        }
+        super.stop();
+    }
+
     @SneakyThrows
     private void proxyBindPort(final int listenPort, final int mappedPort) {
         final ExecCreateCmdResponse createCmdResponse = dockerClient
